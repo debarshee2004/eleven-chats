@@ -1,5 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./components/ui/select";
+import useLocalStorage from "./hooks/useLocalStorage";
 
 // Define form schema with zod
 const formSchema = z.object({
@@ -35,14 +36,32 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 // Function to submit the form data
-const submitPopupForm = (data: FormData) => {
+const SubmitPopupForm = (data: FormData) => {
   console.log("Form submitted with data:", data);
-  // Here you would typically send the data to your extension's background script or API
+
+  // Get localStorage functions
+  const { setItem, updateItem, hasKey } = useLocalStorage();
+
+  // Store or update API Key and Model in local storage
+  if (hasKey("apiKey") !== false) {
+    updateItem<string>("apiKey", data.apiKey); // update
+  } else {
+    setItem<string>("apiKey", data.apiKey); // create
+  }
+
+  if (hasKey("model") !== false) {
+    updateItem<string>("model", data.model); // update
+  } else {
+    setItem<string>("model", data.model); // create
+  }
 };
 
 const PopUp: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
+  const [showConfiguredMessage, setShowConfiguredMessage] = useState(false);
+  const { getItem, hasKey } = useLocalStorage();
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -53,6 +72,25 @@ const PopUp: React.FC = () => {
     },
   });
 
+  // Check if API Key and Model are already configured
+  useEffect(() => {
+    const apiKeyExists = hasKey("apiKey");
+    const modelExists = hasKey("model");
+
+    if (apiKeyExists && modelExists) {
+      // Configuration exists
+      setIsConfigured(true);
+      setShowConfiguredMessage(true);
+
+      // Pre-fill form with existing values
+      const apiKey = getItem<string>("apiKey") || "";
+      const model = getItem<string>("model") || "";
+
+      form.setValue("apiKey", apiKey);
+      form.setValue("model", model);
+    }
+  }, [form, hasKey, getItem]);
+
   // Update form submission with loading state and success message
   const handleFormSubmit = (data: FormData) => {
     console.log("Form submitted!", data);
@@ -60,7 +98,7 @@ const PopUp: React.FC = () => {
 
     // Simulate API call with a timeout
     setTimeout(() => {
-      submitPopupForm(data);
+      SubmitPopupForm(data);
       setShowSuccess(true);
       form.reset();
       setIsSubmitting(false);
@@ -89,9 +127,52 @@ const PopUp: React.FC = () => {
   ];
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center p-6 w-[400px] bg-black text-white rounded-lg shadow-lg">
+    <div className="flex min-h-svh flex-col items-center justify-center p-6 w-[400px] bg-black text-white shadow-lg">
       <div className="w-full max-w-md space-y-6">
-        <h1 className="text-2xl font-bold text-center">Extension Setup</h1>
+        <div className="text-center space-y-2">
+          <h1 className="text-4xl font-bold">ELEVEN CHATS</h1>
+          <p className="text-gray-400">
+            Setup your API key and select a model to get started.
+          </p>
+        </div>
+
+        {showConfiguredMessage && isConfigured && (
+          <div className="bg-white/10 border border-white/30 text-white p-4 rounded-md relative">
+            <button
+              className="absolute top-2 right-2 text-white/70 hover:text-white"
+              onClick={() => setShowConfiguredMessage(false)}
+            >
+              ✕
+            </button>
+            <div className="flex items-center mb-2">
+              <span className="bg-green-500 rounded-full p-1 mr-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-3 w-3 text-white"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </span>
+              <span className="font-medium">Configuration detected</span>
+            </div>
+            <p className="text-sm text-white/80">
+              Your API key and model preferences are already configured. You can
+              modify them below if needed.
+            </p>
+          </div>
+        )}
+
+        {showSuccess && (
+          <div className="bg-green-500/20 border border-green-500 text-green-500 p-3 rounded-md text-center transition-all">
+            Setup completed successfully!
+          </div>
+        )}
 
         <Form {...form}>
           <form
@@ -182,6 +263,8 @@ const PopUp: React.FC = () => {
                   <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
                   Submitting...
                 </>
+              ) : isConfigured ? (
+                "Update Configuration"
               ) : (
                 "Submit"
               )}
