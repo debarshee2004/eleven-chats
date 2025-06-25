@@ -111,20 +111,7 @@ const PopUp: React.FC = () => {
   };
 
   // Define models as key-value object array
-  const models = [
-    { id: "gpt-4", label: "GPT-4" },
-    { id: "gpt-3.5", label: "GPT-3.5" },
-    { id: "claude-3", label: "Claude 3" },
-    { id: "gemini", label: "Gemini" },
-    { id: "mistral-large-latest", label: "Mistral Large" },
-    { id: "mistral-7b", label: "Mistral 7B" },
-    { id: "mixtral-8x7b", label: "Mixtral 8x7B" },
-    { id: "llama-3", label: "LLaMA 3" },
-    { id: "xgen-7b", label: "XGen 7B" },
-    { id: "command-r+", label: "Cohere Command R+" },
-    { id: "palm-2", label: "PaLM 2" },
-    { id: "jurassic-2", label: "Jurassic-2" },
-  ];
+  const models = [{ id: "mistral-large-latest", label: "Mistral Large" }];
 
   return (
     <div className="flex min-h-svh flex-col items-center justify-center p-6 w-[400px] bg-black text-white shadow-lg">
