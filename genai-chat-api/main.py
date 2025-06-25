@@ -81,7 +81,7 @@ async def chat(request: ChatRequest):
         if not request.api_key:
             raise HTTPException(
                 status_code=400,
-                detail="MISTRAL_API_KEY environment variable not set. Please set it with your Mistral API key.",
+                detail="API key missing from request payload. Please include your Mistral API key in the 'api_key' field of the request.",
             )
 
         # Initialize the Mistral chat model (use 'mistral-large-latest')
