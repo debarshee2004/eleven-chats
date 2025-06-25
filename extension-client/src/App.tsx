@@ -155,12 +155,6 @@ const PopUp: React.FC = () => {
           </div>
         )}
 
-        {showSuccess && (
-          <div className="bg-green-500/20 border border-green-500 text-green-500 p-3 rounded-md text-center transition-all">
-            Setup completed successfully!
-          </div>
-        )}
-
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(handleFormSubmit)}
@@ -173,7 +167,11 @@ const PopUp: React.FC = () => {
                 <FormItem>
                   <FormLabel>API Key</FormLabel>
                   <FormControl>
-                    <Input placeholder="Enter your API key" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Enter your API key"
+                      {...field}
+                    />
                   </FormControl>
                   <FormDescription>
                     Enter your API key for authentication
